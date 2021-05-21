@@ -5,6 +5,10 @@ import logging
 import warnings 
 
 import numpy as np 
+<<<<<<< HEAD
+=======
+import pandas as pd 
+>>>>>>> 51f2352d300e96a7a504c16ecb46e7b1163c6a21
 from pyam import IamDataFrame 
 
 logger = logging.getLogger(__name__)
@@ -21,13 +25,41 @@ class ExtendRMSClosest:
     """
     def __init__(self, db):
         """
+<<<<<<< HEAD
         Initialise the time projector with the infilling database
         :param db: Infilling database
         :type db: IamDataFrame
+=======
+        Initialise the time projector with a database that contains 
+        the range of times you wish to see in the output.
+
+        Parameters
+        ----------
+        db : IamDataFrame
+            The database to use
+>>>>>>> 51f2352d300e96a7a504c16ecb46e7b1163c6a21
         """
         self._db = db.copy()
     
     def derive_relationship(self, variable):
+<<<<<<< HEAD
+=======
+        """
+        Derives the values for the model/scenario combination in the database
+        with the least RMS error.
+
+        Parameters
+        ----------
+        variable : str
+            The variable for which we want to calculate the timeseries (e.g.
+            `Emissions|CO2`).
+
+        Returns
+        -------
+        :obj: `pyam.IamDataFrame`
+            Filled in data (without original source data)
+        """
+>>>>>>> 51f2352d300e96a7a504c16ecb46e7b1163c6a21
         iamdf = self._get_iamdf_variable(variable)
 
         infiller_time_col = iamdf.time_col 
@@ -40,6 +72,28 @@ class ExtendRMSClosest:
         )
 
         def filler(in_iamdf):
+<<<<<<< HEAD
+=======
+            """
+            Filler function 
+
+            Parameters
+            ----------
+            in_iamdf : pyam.IamDataFrame
+                Input data to be infilled
+
+            Returns
+            -------
+            :obj:pyam.IamDataFrame
+                Filled in data (without original source data)
+
+            Raises
+            ------
+            ValueError
+                "The infiller database does not extend in time past the target "
+                "database, so no infilling can occur."
+            """
+>>>>>>> 51f2352d300e96a7a504c16ecb46e7b1163c6a21
             target_df = in_iamdf.filter(variable=variable)
             if target_df.empty:
                 error_msg = "No data for `variable`({}) in target dataframe".format(
@@ -66,6 +120,7 @@ class ExtendRMSClosest:
                         "Not timeseries overlap between original and unfilled data"
                     )
                 
+<<<<<<< HEAD
                 return to_return 
 
             infiller_at_key_times = get_values_at_key_timepoints(iamdf, key_timepoint_filter)
@@ -83,6 +138,22 @@ class ExtendRMSClosest:
 
             for time in later_times:
                 output_ts[time] = tmp[time]
+=======
+                return to_return.timeseries() 
+
+            infiller_at_key_times = get_values_at_key_timepoints(iamdf, key_timepoint_filter)
+            target_at_key_times = get_values_at_key_timepoints(target_df, key_timepoint_filter)
+
+            closest_model, closest_scenario = _select_closest(
+                infiller_at_key_times, target_at_key_times
+            )
+            tmp = iamdf.filter(
+                model = closest_model, scenario = closest_scenario
+            ).timeseries()
+            output_ts = target_df.timeseries()
+            for time in later_times:
+                output_ts[time] = tmp[time].values[0]
+>>>>>>> 51f2352d300e96a7a504c16ecb46e7b1163c6a21
             for col in output_ts.columns:
                 if col not in later_times:
                     del output_ts[col]
@@ -106,10 +177,17 @@ def _select_closest(to_search_df, target_df):
     
     rms = pd.Series(index=to_search_df.index)
     target_for_var = {}
+<<<<<<< HEAD
     variable = to_search_df.index.get_level_values("variable").unique()
     target_for_var[variable] = target_df[
         target_df.index.get_level_values("variable")
     ].squeeze()
+=======
+    for var in to_search_df.index.get_level_values("variable").unique():
+        target_for_var[var] = target_df[
+            target_df.index.get_level_values("variable") == var
+        ].squeeze()
+>>>>>>> 51f2352d300e96a7a504c16ecb46e7b1163c6a21
     var_index = to_search_df.index.names.index("variable")
     for label, row in to_search_df.iterrows():
         varname = label[var_index]
